@@ -514,10 +514,10 @@
             <div class="branches">
                 <!-- چرخه زندگی -->
                 <div class="branch">
-                    <div class="branch-header" onclick="toggleBranch(this)">
+                    <div class="branch-header collapsed" onclick="toggleBranch(this)">
                         <span class="emoji">🔄</span> چرخه زندگی
                     </div>
-                    <div class="branch-content">
+                    <div class="branch-content collapsed">
                         <div class="section">
                             <div class="section-title">مراحل در انسان</div>
                             <div class="item">گزش پشه خاکی → تزریق پروماستیگوت</div>
@@ -561,10 +561,10 @@
 
                 <!-- راه‌های انتقال -->
                 <div class="branch">
-                    <div class="branch-header" onclick="toggleBranch(this)">
+                    <div class="branch-header collapsed" onclick="toggleBranch(this)">
                         <span class="emoji">📍</span> راه‌های انتقال
                     </div>
-                    <div class="branch-content">
+                    <div class="branch-content collapsed">
                         <div class="section">
                             <div class="section-title">راه اصلی انتقال</div>
                             <div class="success">گزش پشه خاکی آلوده (فرم پروماستیگوت)</div>
@@ -610,10 +610,10 @@
 
                 <!-- گونه‌ها -->
                 <div class="branch">
-                    <div class="branch-header" onclick="toggleBranch(this)">
+                    <div class="branch-header collapsed" onclick="toggleBranch(this)">
                         <span class="emoji">🧬</span> گونه‌ها و انواع بالینی
                     </div>
-                    <div class="branch-content">
+                    <div class="branch-content collapsed">
                         <div class="section">
                             <div class="section-title">لیشمانیوز جلدی (CL)</div>
                             
@@ -685,10 +685,10 @@
 
                 <!-- علائم، تشخیص، درمان -->
                 <div class="branch">
-                    <div class="branch-header" onclick="toggleBranch(this)">
+                    <div class="branch-header collapsed" onclick="toggleBranch(this)">
                         <span class="emoji">🩺</span> علائم، تشخیص، درمان
                     </div>
-                    <div class="branch-content">
+                    <div class="branch-content collapsed">
                         <div class="section">
                             <div class="section-title">علائم لیشمانیوز جلدی (CL)</div>
                             
@@ -910,7 +910,7 @@
 
         function toggleBranch(header) {
             const content = header.nextElementSibling;
-            const isCollapsed = content.classList.contains('collapsed');
+            const wasCollapsed = content.classList.contains('collapsed');
             
             header.classList.toggle('collapsed');
             content.classList.toggle('collapsed');
@@ -919,7 +919,7 @@
             try {
                 const branchText = header.textContent.trim();
                 const states = JSON.parse(localStorage.getItem('leishmaniasis-branches') || '{}');
-                states[branchText] = !isCollapsed;
+                states[branchText] = wasCollapsed; // true if now open, false if now closed
                 localStorage.setItem('leishmaniasis-branches', JSON.stringify(states));
             } catch (e) {
                 console.warn('localStorage not available');
@@ -935,15 +935,20 @@
                     updateZoom();
                 }
                 
-                const savedBranches = JSON.parse(localStorage.getItem('leishmaniasis-branches') || '{}');
-                const headers = document.querySelectorAll('.branch-header');
-                headers.forEach(header => {
-                    const branchText = header.textContent.trim();
-                    if (savedBranches[branchText] === false) {
-                        header.classList.add('collapsed');
-                        header.nextElementSibling.classList.add('collapsed');
-                    }
-                });
+                // Restore branch states only if user has interacted before
+                const savedBranches = localStorage.getItem('leishmaniasis-branches');
+                if (savedBranches) {
+                    const states = JSON.parse(savedBranches);
+                    const headers = document.querySelectorAll('.branch-header');
+                    headers.forEach(header => {
+                        const branchText = header.textContent.trim();
+                        if (states[branchText] === true) {
+                            // Only open branches that were explicitly opened by user
+                            header.classList.remove('collapsed');
+                            header.nextElementSibling.classList.remove('collapsed');
+                        }
+                    });
+                }
             } catch (e) {
                 console.warn('Could not restore state');
             }
