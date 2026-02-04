@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+<!DOCTYPE html><!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نمودار درختی لیشمانیوز - نمای یک صفحه</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>نمودار درختی لیشمانیوز</title>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
@@ -15,236 +15,316 @@
         body {
             font-family: 'Vazirmatn', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            min-height: 100vh;
+            padding: 10px;
         }
 
         .zoom-controls {
             position: fixed;
-            top: 20px;
-            left: 20px;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
             z-index: 1000;
             display: flex;
             gap: 10px;
+            background: rgba(255,255,255,0.95);
+            padding: 10px;
+            border-radius: 50px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
         }
 
         .zoom-btn {
             width: 45px;
             height: 45px;
-            background: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
-            border-radius: 12px;
+            border-radius: 50%;
             font-size: 1.5rem;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: all 0.3s;
-            color: #667eea;
+            color: white;
             font-weight: 700;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102,126,234,0.4);
         }
 
-        .zoom-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(102,126,234,0.4);
+        .zoom-btn:active {
+            transform: scale(0.95);
         }
 
         .reset-btn {
+            border-radius: 25px;
             padding: 0 20px;
             width: auto;
             font-size: 0.9rem;
         }
 
         .container {
-            width: 95vw;
-            height: 90vh;
             background: white;
             border-radius: 20px;
-            overflow: auto;
+            overflow: hidden;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            transition: transform 0.3s ease;
-            transform-origin: center center;
+            margin-bottom: 80px;
         }
 
         .content {
-            padding: 30px;
-            min-width: 1600px;
+            padding: 20px;
+            transform-origin: top center;
+            transition: transform 0.3s ease;
         }
 
         h1 {
             text-align: center;
-            font-size: 2rem;
+            font-size: clamp(1.3rem, 5vw, 2rem);
             font-weight: 800;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 10px;
+            line-height: 1.3;
         }
 
         .subtitle {
             text-align: center;
             color: #718096;
-            font-size: 0.9rem;
-            margin-bottom: 25px;
+            font-size: clamp(0.7rem, 2.5vw, 0.9rem);
+            margin-bottom: 20px;
+            line-height: 1.5;
         }
 
         .root {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         .root-node {
             display: inline-block;
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
-            padding: 15px 40px;
+            padding: 12px 30px;
             border-radius: 15px;
-            font-size: 1.5rem;
+            font-size: clamp(1rem, 4vw, 1.5rem);
             font-weight: 700;
             box-shadow: 0 10px 30px rgba(240,147,251,0.4);
         }
 
         .branches {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: 1fr;
             gap: 20px;
         }
 
         .branch {
             background: #f7fafc;
-            border-radius: 12px;
-            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            border: 3px solid #e2e8f0;
             overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
         .branch-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 12px 15px;
-            font-size: 1rem;
+            padding: 15px 20px;
+            font-size: clamp(1rem, 4vw, 1.3rem);
             font-weight: 700;
             text-align: center;
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .branch-header::after {
+            content: '▼';
+            position: absolute;
+            left: 20px;
+            transition: transform 0.3s;
+            font-size: 0.9em;
+        }
+
+        .branch-header.collapsed::after {
+            transform: rotate(-90deg);
         }
 
         .branch-content {
-            padding: 15px;
-            font-size: 0.75rem;
-            max-height: calc(90vh - 250px);
-            overflow-y: auto;
+            padding: 20px;
+            font-size: clamp(0.8rem, 3vw, 0.95rem);
+            max-height: 2000px;
+            overflow: hidden;
+            transition: max-height 0.5s ease, padding 0.5s ease;
+        }
+
+        .branch-content.collapsed {
+            max-height: 0;
+            padding: 0 20px;
         }
 
         .section {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             background: white;
-            padding: 10px;
-            border-radius: 8px;
-            border-right: 3px solid #667eea;
+            padding: 15px;
+            border-radius: 12px;
+            border-right: 4px solid #667eea;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
         .section-title {
-            font-size: 0.85rem;
+            font-size: clamp(0.9rem, 3.5vw, 1.1rem);
             font-weight: 700;
             color: #2d3748;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 8px;
         }
 
         .section-title::before {
             content: '▸';
             color: #667eea;
+            font-size: 1.2em;
         }
 
         .item {
-            margin-bottom: 5px;
-            padding: 4px 8px;
+            margin-bottom: 8px;
+            padding: 8px 12px;
             background: rgba(102,126,234,0.05);
-            border-radius: 4px;
-            line-height: 1.4;
+            border-radius: 8px;
+            line-height: 1.6;
             color: #4a5568;
-            font-size: 0.7rem;
+            font-size: clamp(0.75rem, 2.8vw, 0.9rem);
         }
 
         .highlight {
             background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-            padding: 8px;
-            border-radius: 6px;
-            margin-bottom: 8px;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 12px;
             font-weight: 600;
             color: #744210;
-            font-size: 0.7rem;
+            font-size: clamp(0.75rem, 2.8vw, 0.9rem);
+            line-height: 1.5;
         }
 
         .species-box {
             background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-            padding: 6px;
-            border-radius: 6px;
-            margin-bottom: 6px;
-            font-size: 0.7rem;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            font-size: clamp(0.75rem, 2.8vw, 0.9rem);
             font-weight: 600;
             text-align: center;
+            line-height: 1.4;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.65rem;
-            margin: 8px 0;
+            font-size: clamp(0.7rem, 2.5vw, 0.85rem);
+            margin: 12px 0;
+            overflow-x: auto;
+            display: block;
+        }
+
+        table tbody {
+            display: table;
+            width: 100%;
         }
 
         th {
-            background: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 6px;
+            padding: 10px 6px;
             font-weight: 600;
+            white-space: nowrap;
         }
 
         td {
-            padding: 5px;
+            padding: 8px 6px;
             border-bottom: 1px solid #e2e8f0;
             text-align: center;
         }
 
         .note {
             background: #fff5f5;
-            border-right: 3px solid #fc8181;
-            padding: 6px;
-            border-radius: 4px;
-            margin: 6px 0;
-            font-size: 0.65rem;
+            border-right: 4px solid #fc8181;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: clamp(0.7rem, 2.5vw, 0.85rem);
             color: #742a2a;
+            line-height: 1.5;
+        }
+
+        .note::before {
+            content: '⚠️ ';
+            font-size: 1.1em;
         }
 
         .success {
             background: #f0fff4;
-            border-right: 3px solid #48bb78;
-            padding: 6px;
-            border-radius: 4px;
-            margin: 6px 0;
-            font-size: 0.65rem;
+            border-right: 4px solid #48bb78;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: clamp(0.7rem, 2.5vw, 0.85rem);
             color: #22543d;
+            line-height: 1.5;
+        }
+
+        .success::before {
+            content: '✅ ';
+            font-size: 1.1em;
         }
 
         .subsection {
-            margin-right: 10px;
-            margin-bottom: 8px;
+            margin-right: 15px;
+            margin-bottom: 15px;
         }
 
         .subsection-title {
-            font-size: 0.75rem;
+            font-size: clamp(0.8rem, 3vw, 1rem);
             font-weight: 600;
             color: #4a5568;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: rgba(102,126,234,0.1);
+            border-radius: 6px;
         }
 
         .arrow {
             text-align: center;
             color: #667eea;
-            font-size: 0.9rem;
-            margin: 5px 0;
+            font-size: clamp(1rem, 4vw, 1.3rem);
+            margin: 8px 0;
+            font-weight: 700;
+        }
+
+        .info-footer {
+            margin-top: 25px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            color: white;
+            text-align: center;
+            font-size: clamp(0.75rem, 2.8vw, 0.95rem);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .stat-box {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            line-height: 1.6;
+        }
+
+        .emoji {
+            font-size: 1.2em;
         }
 
         ::-webkit-scrollbar {
@@ -262,50 +342,82 @@
             border-radius: 10px;
         }
 
-        ::-webkit-scrollbar-thumb:hover {
-            background: #764ba2;
+        /* Tablet styles */
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+            }
+
+            .content {
+                padding: 40px;
+            }
+
+            .branches {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .stats {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .zoom-controls {
+                bottom: 30px;
+            }
         }
 
-        .info-footer {
-            margin-top: 20px;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 12px;
-            color: white;
-            text-align: center;
-            font-size: 0.75rem;
+        /* Desktop styles */
+        @media (min-width: 1200px) {
+            body {
+                padding: 30px;
+            }
+
+            .content {
+                padding: 50px;
+            }
+
+            .branches {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .container {
+                max-width: 1800px;
+                margin: 0 auto 80px;
+            }
         }
 
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 10px;
-        }
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
 
-        .stat-box {
-            background: rgba(255,255,255,0.2);
-            padding: 10px;
-            border-radius: 8px;
-            backdrop-filter: blur(10px);
-        }
+            .zoom-controls {
+                display: none;
+            }
 
-        .emoji {
-            font-size: 1rem;
+            .branch-content {
+                max-height: none !important;
+                padding: 20px !important;
+            }
+
+            .branch-header::after {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
     <div class="zoom-controls">
-        <button class="zoom-btn" onclick="zoomIn()">+</button>
-        <button class="zoom-btn" onclick="zoomOut()">−</button>
-        <button class="zoom-btn reset-btn" onclick="resetZoom()">Reset</button>
+        <button class="zoom-btn" onclick="zoomIn()" aria-label="بزرگنمایی">+</button>
+        <button class="zoom-btn reset-btn" onclick="resetZoom()" aria-label="بازنشانی">↺ Reset</button>
+        <button class="zoom-btn" onclick="zoomOut()" aria-label="کوچکنمایی">−</button>
     </div>
 
-    <div class="container" id="container">
-        <div class="content">
+    <div class="container">
+        <div class="content" id="content">
             <h1>🦠 نمودار درختی جامع لیشمانیوز</h1>
-            <p class="subtitle">Leishmaniasis Comprehensive Tree -  دکتر یقه - 1404</p>
+            <p class="subtitle">Leishmaniasis Comprehensive Tree Diagram<br>جلسه 4 انگل‌شناسی پزشکی - دکتر یقه - 1402</p>
 
             <div class="root">
                 <div class="root-node">لیشمانیوز (Leishmaniasis)</div>
@@ -314,262 +426,377 @@
             <div class="branches">
                 <!-- چرخه زندگی -->
                 <div class="branch">
-                    <div class="branch-header">🔄 چرخه زندگی</div>
+                    <div class="branch-header" onclick="toggleBranch(this)">
+                        <span class="emoji">🔄</span> چرخه زندگی
+                    </div>
                     <div class="branch-content">
                         <div class="section">
                             <div class="section-title">مراحل در انسان</div>
-                            <div class="item">گزش پشه → تزریق پروماستیگوت</div>
+                            <div class="item">گزش پشه خاکی → تزریق پروماستیگوت</div>
                             <div class="arrow">↓</div>
-                            <div class="item">فاگوسیتوز توسط ماکروفاژ (CR1, CR3)</div>
+                            <div class="item">فاگوسیتوز توسط ماکروفاژ (گیرنده‌های CR1 و CR3)</div>
                             <div class="arrow">↓</div>
-                            <div class="item">تبدیل به آماستیگوت</div>
+                            <div class="item">تبدیل به آماستیگوت داخل ماکروفاژ</div>
                             <div class="arrow">↓</div>
-                            <div class="item">تکثیر در ماکروفاژها</div>
+                            <div class="item">تکثیر در ماکروفاژها و بافت‌های مختلف</div>
+                            <div class="arrow">↓</div>
+                            <div class="item">خونخواری پشه → انتقال آماستیگوت</div>
                         </div>
 
                         <div class="section">
-                            <div class="section-title">مراحل در پشه</div>
-                            <div class="item">بلع آماستیگوت</div>
+                            <div class="section-title">مراحل در پشه خاکی</div>
+                            <div class="item">بلع ماکروفاژهای آلوده (حاوی آماستیگوت)</div>
                             <div class="arrow">↓</div>
-                            <div class="item">تبدیل به پروماستیگوت پروسیکلیک</div>
+                            <div class="item">تبدیل به پروماستیگوت پروسیکلیک در روده میانی</div>
                             <div class="arrow">↓</div>
-                            <div class="item">پروماستیگوت متاسیکلیک</div>
+                            <div class="item">تکثیر و تبدیل به پروماستیگوت متاسیکلیک</div>
                             <div class="arrow">↓</div>
-                            <div class="item">مهاجرت به خرطوم</div>
+                            <div class="item">مهاجرت به خرطوم و آمادگی برای انتقال</div>
                         </div>
 
                         <div class="section">
                             <div class="section-title">فرم‌های انگل</div>
-                            <div class="highlight">آماستیگوت: داخل سلولی، 2.8-4.2 μm</div>
-                            <div class="highlight">پروماستیگوت: تاژک‌دار، 14-20 μm</div>
+                            <div class="highlight"><strong>آماستیگوت:</strong> داخل سلولی، بدون تاژک، بیضی شکل (2.8-4.2 μm)</div>
+                            <div class="highlight"><strong>پروماستیگوت:</strong> خارج سلولی، تاژک‌دار، کشیده (14-20 μm)</div>
                         </div>
 
                         <div class="section">
                             <div class="section-title">میزبانان</div>
-                            <div class="item"><strong>نهایی:</strong> انسان، سگ، جوندگان</div>
-                            <div class="item"><strong>ناقل:</strong> پشه خاکی ♀</div>
-                            <div class="item">Phlebotomus (دنیای قدیم)</div>
-                            <div class="item">Lutzomyia (دنیای جدید)</div>
+                            <div class="item"><strong>میزبان نهایی:</strong> انسان، سگ، جوندگان</div>
+                            <div class="item"><strong>ناقل:</strong> پشه خاکی ماده (♀)</div>
+                            <div class="item">• Phlebotomus (دنیای قدیم)</div>
+                            <div class="item">• Lutzomyia (دنیای جدید)</div>
+                            <div class="note">تنها پشه‌های ماده خونخواری می‌کنند</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- راه‌های انتقال -->
                 <div class="branch">
-                    <div class="branch-header">📍 راه‌های انتقال</div>
+                    <div class="branch-header" onclick="toggleBranch(this)">
+                        <span class="emoji">📍</span> راه‌های انتقال
+                    </div>
                     <div class="branch-content">
                         <div class="section">
-                            <div class="section-title">راه اصلی</div>
-                            <div class="success">گزش پشه خاکی آلوده</div>
-                            <div class="item">600 گونه / 13 گونه ناقل</div>
+                            <div class="section-title">راه اصلی انتقال</div>
+                            <div class="success">گزش پشه خاکی آلوده (فرم پروماستیگوت)</div>
+                            <div class="item">600 گونه پشه خاکی / فقط 13 گونه در انتقال نقش دارند</div>
                         </div>
 
                         <div class="section">
-                            <div class="section-title">ناقلین ایران</div>
-                            <div class="species-box">P. sergenti → L. tropica</div>
-                            <div class="species-box">P. papatasi → L. major</div>
-                            <div class="species-box">P. major → L. infantum</div>
+                            <div class="section-title">ناقلین مهم در ایران</div>
+                            <div class="species-box">P. sergenti → L. tropica (شهری)</div>
+                            <div class="species-box">P. papatasi → L. major (روستایی)</div>
+                            <div class="species-box">P. major, P. kandelakii → L. infantum (احشایی)</div>
+                            <div class="note">Sergentomyia در انتقال به انسان نقش ندارد (فقط جوندگان)</div>
                         </div>
 
                         <div class="section">
-                            <div class="section-title">راه‌های فرعی</div>
-                            <div class="item">تماس با زخم</div>
-                            <div class="item">انتقال مکانیکی (Stomoxys)</div>
-                            <div class="item">ترانسفوزیون خون</div>
+                            <div class="section-title">راه‌های فرعی (نادر)</div>
+                            <div class="item">• تماس مستقیم با زخم بیمار → انتقال آماستیگوت</div>
+                            <div class="item">• انتقال مکانیکی توسط مگس (Stomoxys)</div>
+                            <div class="item">• ترانسفوزیون خون آلوده (مونوسیت‌های حاوی آماستیگوت)</div>
                         </div>
 
                         <div class="section">
-                            <div class="section-title">مخازن</div>
-                            <div class="item"><strong>L. major:</strong> Rhombomys, Meriones, Tatera</div>
-                            <div class="item"><strong>L. tropica:</strong> انسان، سگ</div>
-                            <div class="item"><strong>L. infantum:</strong> سگ، روباه</div>
+                            <div class="section-title">مخازن انگل در ایران</div>
+                            <div class="subsection">
+                                <div class="subsection-title">L. major (روستایی)</div>
+                                <div class="item">• Rhombomys opimus (گلستان، اصفهان)</div>
+                                <div class="item">• Meriones libycus (یزد)</div>
+                                <div class="item">• Meriones hurrianae (سیستان و بلوچستان)</div>
+                                <div class="item">• Tatera indica (استان‌های جنوبی)</div>
+                            </div>
+                            <div class="subsection">
+                                <div class="subsection-title">L. tropica (شهری)</div>
+                                <div class="item">• انسان (مخزن اصلی)</div>
+                                <div class="item">• سگ (گاهی)</div>
+                            </div>
+                            <div class="subsection">
+                                <div class="subsection-title">L. infantum (احشایی)</div>
+                                <div class="item">• سگ و سگ‌سانان (روباه، شغال)</div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- گونه‌ها -->
                 <div class="branch">
-                    <div class="branch-header">🧬 گونه‌ها و انواع بالینی</div>
+                    <div class="branch-header" onclick="toggleBranch(this)">
+                        <span class="emoji">🧬</span> گونه‌ها و انواع بالینی
+                    </div>
                     <div class="branch-content">
                         <div class="section">
-                            <div class="section-title">CL - لیشمانیوز جلدی</div>
+                            <div class="section-title">لیشمانیوز جلدی (CL)</div>
+                            
+                            <div class="subsection">
+                                <div class="subsection-title">🌍 دنیای قدیم (Old World)</div>
+                                
+                                <div class="species-box">L. major - سالک روستایی (ZCL)</div>
+                                <div class="item">• زخم مرطوب، چرکی، ترشح‌دار</div>
+                                <div class="item">• دوره کمون: 1-3 ماه</div>
+                                <div class="item">• محل: دست، پا، صورت</div>
+                                <div class="item">🇮🇷 ایران: فارس، اصفهان، سیستان و بلوچستان</div>
+                                
+                                <div class="species-box">L. tropica - سالک شهری (ACL)</div>
+                                <div class="item">• زخم خشک، پوسته‌دار، آتشفشانی</div>
+                                <div class="item">• دوره کمون: 5-6 ماه</div>
+                                <div class="item">• محل: صورت (بیشتر)</div>
+                                <div class="item">🇮🇷 ایران: کرمان، مشهد، شیراز، تهران</div>
+                                <div class="note">خطر تبدیل به VL، LR، DCL</div>
+                                
+                                <div class="species-box">L. aethiopica</div>
+                                <div class="item">🇪🇹 اتیوپی • مخزن: Rock hyrax</div>
+                            </div>
+
+                            <div class="subsection">
+                                <div class="subsection-title">🌎 دنیای جدید (New World)</div>
+                                <div class="item">• L. mexicana - زخم چیکلرو (نرمه گوش)</div>
+                                <div class="item">• L. braziliensis - خطرناک‌ترین (80% متاستاز)</div>
+                                <div class="item">• L. amazonensis - 4 فرم بالینی</div>
+                                <div class="item">• L. peruviana - یوتا (خوش‌خیم، کودکان)</div>
+                            </div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-title">لیشمانیوز احشایی (VL)</div>
                             
                             <div class="subsection-title">🌍 دنیای قدیم</div>
-                            <div class="species-box">L. major - روستایی (ZCL)</div>
-                            <div class="item">زخم مرطوب، 1-3 ماه</div>
-                            <div class="item">🇮🇷 فارس، اصفهان، سیستان</div>
+                            <div class="species-box">🇮🇷 L. infantum - مدیترانه‌ای</div>
+                            <div class="item">• کودکان < 5 سال (95%)</div>
+                            <div class="item">• مخزن: سگ، روباه، شغال</div>
+                            <div class="item">🇮🇷 ایران: آذربایجان، اردبیل، فارس، بوشهر</div>
                             
-                            <div class="species-box">L. tropica - شهری (ACL)</div>
-                            <div class="item">زخم خشک، 5-6 ماه</div>
-                            <div class="item">🇮🇷 کرمان، مشهد، شیراز</div>
-                            <div class="note">خطر VL، LR، DCL</div>
+                            <div class="species-box">🇮🇳 L. donovani - هندی</div>
+                            <div class="item">• کالاآزار (بیماری سیاه)</div>
+                            <div class="item">• ایجاد PKDL</div>
                             
-                            <div class="species-box">L. aethiopica</div>
-                            <div class="item">🇪🇹 اتیوپی</div>
-
                             <div class="subsection-title">🌎 دنیای جدید</div>
-                            <div class="item">L. mexicana complex</div>
-                            <div class="item">L. braziliensis (80% متاستاز)</div>
-                            <div class="item">L. amazonensis (4 فرم)</div>
-                            <div class="item">L. peruviana (یوتا)</div>
+                            <div class="species-box">L. chagasi - آمریکای جنوبی</div>
                         </div>
 
                         <div class="section">
-                            <div class="section-title">VL - احشایی</div>
-                            <div class="species-box">🇮🇷 L. infantum</div>
-                            <div class="item">کودکان <5 سال (95%)</div>
-                            <div class="item">مخزن: سگ</div>
-                            
-                            <div class="species-box">🇮🇳 L. donovani</div>
-                            <div class="item">کالاآزار هندی، PKDL</div>
-                            
-                            <div class="species-box">L. chagasi</div>
-                            <div class="item">آمریکای جنوبی</div>
+                            <div class="section-title">لیشمانیوز جلدی-مخاطی (MCL)</div>
+                            <div class="item">• L. braziliensis (80% متاستاز به مخاط)</div>
+                            <div class="item">• L. panamensis</div>
+                            <div class="item">• L. guyanensis</div>
+                            <div class="item">• درگیری مخاط بینی، حلق، لب</div>
+                            <div class="note">🇮🇷 در ایران نداریم (عدم وجود ناقل)</div>
                         </div>
 
                         <div class="section">
-                            <div class="section-title">MCL - جلدی-مخاطی</div>
-                            <div class="item">L. braziliensis (80%)</div>
-                            <div class="item">L. panamensis</div>
-                            <div class="item">L. guyanensis</div>
-                            <div class="note">🇮🇷 در ایران نداریم</div>
-                        </div>
-
-                        <div class="section">
-                            <div class="section-title">DCL - منتشر</div>
-                            <div class="item">L. tropica، L. aethiopica</div>
-                            <div class="item">آنرژی ایمنی</div>
+                            <div class="section-title">لیشمانیوز منتشر (DCL)</div>
+                            <div class="item">• زیرمجموعه CL</div>
+                            <div class="item">• آنرژی سیستم ایمنی</div>
+                            <div class="item">• زخم‌های متعدد در کل بدن</div>
+                            <div class="item">• عامل: L. tropica، L. aethiopica</div>
+                            <div class="note">🇮🇷 در ایران به صورت اسپورادیک</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- علائم، تشخیص، درمان -->
                 <div class="branch">
-                    <div class="branch-header">🩺 علائم، تشخیص، درمان</div>
+                    <div class="branch-header" onclick="toggleBranch(this)">
+                        <span class="emoji">🩺</span> علائم، تشخیص، درمان
+                    </div>
                     <div class="branch-content">
                         <div class="section">
-                            <div class="section-title">علائم CL</div>
+                            <div class="section-title">علائم لیشمانیوز جلدی (CL)</div>
+                            
                             <table>
-                                <tr>
-                                    <th>ویژگی</th>
-                                    <th>L. major</th>
-                                    <th>L. tropica</th>
-                                </tr>
-                                <tr>
-                                    <td>زخم</td>
-                                    <td>مرطوب</td>
-                                    <td>خشک</td>
-                                </tr>
-                                <tr>
-                                    <td>کمون</td>
-                                    <td>1-3 ماه</td>
-                                    <td>5-6 ماه</td>
-                                </tr>
-                                <tr>
-                                    <td>تعداد</td>
-                                    <td>زیاد</td>
-                                    <td>کم</td>
-                                </tr>
-                                <tr>
-                                    <td>انگل</td>
-                                    <td>کم</td>
-                                    <td>زیاد</td>
-                                </tr>
+                                <thead>
+                                    <tr>
+                                        <th>ویژگی</th>
+                                        <th>L. major</th>
+                                        <th>L. tropica</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>نوع زخم</strong></td>
+                                        <td>مرطوب، چرکی</td>
+                                        <td>خشک، پوسته‌دار</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>دوره کمون</strong></td>
+                                        <td>1-3 ماه</td>
+                                        <td>5-6 ماه</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>تعداد زخم</strong></td>
+                                        <td>متعدد</td>
+                                        <td>کم (معمولاً 1)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>تعداد انگل</strong></td>
+                                        <td>کم</td>
+                                        <td>زیاد</td>
+                                    </tr>
+                                </tbody>
                             </table>
-                            <div class="item"><strong>LR:</strong> مقاوم، چند ساله</div>
-                            <div class="item"><strong>DCL:</strong> متعدد، آنرژی</div>
+
+                            <div class="subsection">
+                                <div class="subsection-title">اشکال آتیپیک</div>
+                                <div class="item">• <strong>فرم لوپوئید (LR):</strong> مقاوم به درمان، رشد عمقی، چند ساله</div>
+                                <div class="item">• <strong>فرم منتشر (DCL):</strong> زخم‌های متعدد، آنرژی ایمنی</div>
+                                <div class="item">• <strong>فرم اسپوروتریکوئید:</strong> در مسیر لنفاوی</div>
+                            </div>
+
+                            <div class="note">شک به سالک: 1) زخم > 1 ماه 2) سفر به منطقه اندمیک 3) عدم پاسخ به آنتی‌بیوتیک</div>
                         </div>
 
                         <div class="section">
-                            <div class="section-title">علائم VL</div>
-                            <div class="item">🌡️ تب دوکوهانه</div>
-                            <div class="item">🫃 هپاتواسپلنومگالی</div>
-                            <div class="item">⚖️ لاغری، بی‌اشتهایی</div>
-                            <div class="item">🩸 کم‌خونی، لکوپنی</div>
-                            <div class="item">📈 گاماگلوبولین↑</div>
-                            <div class="item">💧 آسیت (پیشرفته)</div>
-                            <div class="note">کودکان <5 سال / مرگ</div>
+                            <div class="section-title">علائم لیشمانیوز احشایی (VL)</div>
+                            <div class="highlight">دوره کمون: 2-6 ماه (گاهی تا 2 سال)</div>
+                            
+                            <div class="item">🌡️ تب دوکوهانه (مداوم، متناوب)</div>
+                            <div class="item">🫃 هپاتواسپلنومگالی (بزرگی کبد و طحال)</div>
+                            <div class="item">⚖️ لاغری پیش‌رونده، بی‌اشتهایی</div>
+                            <div class="item">🩸 کم‌خونی (گرفتاری مغز استخوان)</div>
+                            <div class="item">🔬 لکوپنی (WBC < 4000/μL)</div>
+                            <div class="item">📈 افزایش گاماگلوبولین (60-70%)</div>
+                            <div class="item">💧 آسیت (در مراحل پیشرفته)</div>
+                            <div class="item">⚫ لکه‌های سیاه در شکم (کالاآزار)</div>
+                            
+                            <div class="note">بیشتر در کودکان < 5 سال | بدون درمان: مرگ</div>
                         </div>
 
                         <div class="section">
-                            <div class="section-title">تشخیص</div>
-                            <div class="item"><strong>مستقیم:</strong> گیمسا (95% حاد)</div>
-                            <div class="item"><strong>کشت:</strong> NNN (2-4 هفته)</div>
-                            <div class="item"><strong>PCR:</strong> مزمن (DNA)</div>
-                            <div class="item"><strong>VL:</strong> پونکسیون مغز (55-86%)</div>
-                            <div class="item"><strong>rK39:</strong> دیپ‌استیک (بهترین)</div>
-                            <div class="item"><strong>مونته‌نگرو:</strong> DTH (48-72h)</div>
-                            <div class="success">مثبت: CL، MCL، VL درمان‌شده</div>
-                            <div class="note">منفی: VL حاد، DCL</div>
+                            <div class="section-title">تشخیص آزمایشگاهی</div>
+                            
+                            <div class="subsection">
+                                <div class="subsection-title">روش‌های مستقیم (CL)</div>
+                                <div class="item">• <strong>رنگ‌آمیزی گیمسا:</strong> مشاهده آماستیگوت (حاد 95%، مزمن 60-70%)</div>
+                                <div class="item">• <strong>کشت:</strong> NNN، PMI (2-4 هفته)</div>
+                                <div class="item">• <strong>PCR:</strong> حساسیت بالا در فرم مزمن</div>
+                            </div>
+
+                            <div class="subsection">
+                                <div class="subsection-title">روش‌های مستقیم (VL)</div>
+                                <div class="item">• <strong>پونکسیون طحال:</strong> 98% (خطرناک)</div>
+                                <div class="item">• <strong>پونکسیون مغز استخوان:</strong> 55-86% (بهترین)</div>
+                                <div class="item">• <strong>rK39 دیپ‌استیک:</strong> بهترین (بدون جراحی)</div>
+                            </div>
+
+                            <div class="subsection">
+                                <div class="subsection-title">تست پوستی (مونته‌نگرو)</div>
+                                <div class="item">• 0.1 mL × 10⁶ پروماستیگوت اینترادرمال</div>
+                                <div class="item">• 48-72 ساعت → کهیر > 5 mm</div>
+                                <div class="success">مثبت: CL، MCL، VL درمان‌شده، LR</div>
+                                <div class="note">منفی: VL حاد، DCL، PKDL</div>
+                            </div>
                         </div>
 
                         <div class="section">
-                            <div class="section-title">درمان CL</div>
-                            <div class="success">عدم نیاز: 1 زخم، پوشیده، ماژور</div>
+                            <div class="section-title">درمان لیشمانیوز جلدی</div>
                             
-                            <div class="highlight">گلوکانتیم (Sb⁵⁺) - خط اول</div>
-                            <div class="item">20 mg/kg/روز × 20-28 روز</div>
-                            <div class="note">منع: قلبی، کلیوی، باردار</div>
-                            
-                            <div class="highlight">آمفوتریسین B - مقاومت</div>
-                            <div class="item">بستری / عوارض زیاد</div>
-                            
-                            <div class="highlight">میلتفوسین - خوراکی</div>
-                            <div class="item">🇮🇷 موجود نیست</div>
-                            
-                            <div class="highlight">کرایوتراپی</div>
-                            <div class="item">نیتروژن مایع / 1-2 بار</div>
-                            
-                            <div class="highlight">🇮🇷 سینا آمفولیش</div>
-                            <div class="item">پماد ایرانی</div>
+                            <div class="subsection">
+                                <div class="subsection-title">شرایط عدم نیاز به درمان</div>
+                                <div class="success">1) زخم در ناحیه پوشیده</div>
+                                <div class="success">2) اندازه ثابت</div>
+                                <div class="success">3) تعداد = 1</div>
+                                <div class="success">4) عامل: L. major</div>
+                            </div>
+
+                            <div class="subsection">
+                                <div class="subsection-title">داروهای سیستمیک</div>
+                                
+                                <div class="highlight">گلوکانتیم (Glucantime) - خط اول</div>
+                                <div class="item">• مگلومین آنتی‌موان پنج‌ظرفیتی (Sb⁵⁺)</div>
+                                <div class="item">• دوز: 20 mg Sb⁵⁺/kg/روز</div>
+                                <div class="item">• مسیر: IM یا IV</div>
+                                <div class="item">• مدت: 20-28 روز (CL)، 28 روز (VL)</div>
+                                <div class="note">منع: بیماری قلبی، کلیوی، بارداری، شیردهی</div>
+                                
+                                <div class="highlight">آمفوتریسین B - خط دوم (مقاومت)</div>
+                                <div class="item">• مکانیسم: تغییر نفوذپذیری غشا</div>
+                                <div class="item">• نیاز به بستری (عوارض زیاد)</div>
+                                
+                                <div class="highlight">میلتفوسین - خوراکی</div>
+                                <div class="item">• مکانیسم: مهار پروتئین کیناز</div>
+                                <div class="note">🇮🇷 در ایران موجود نیست</div>
+                                
+                                <div class="highlight">پارومومایسین - پماد</div>
+                                <div class="item">• آمینوگلیکوزید</div>
+                                <div class="item">• مهار سنتز پروتئین</div>
+                            </div>
+
+                            <div class="subsection">
+                                <div class="subsection-title">روش‌های فیزیکی</div>
+                                <div class="item">• <strong>کرایوتراپی:</strong> نیتروژن مایع، 1-2 بار/روز، 6 هفته</div>
+                                <div class="item">• <strong>ترموتراپی:</strong> 50°C، 30 ثانیه</div>
+                                <div class="item">• <strong>🇮🇷 سینا آمفولیش:</strong> پماد ایرانی (حاوی آمفوتریسین B)</div>
+                            </div>
+
+                            <div class="note">پروتکل: اگر بعد 4 هفته پاسخ ندهد → تکرار یا تغییر دارو</div>
                         </div>
 
                         <div class="section">
-                            <div class="section-title">درمان VL</div>
-                            <div class="item">گلوکانتیم 20 mg/kg × 28 روز</div>
-                            <div class="item">انتقال خون (کم‌خونی)</div>
-                            <div class="item">رژیم غذایی</div>
-                            <div class="success">بهبود: عدم عود 6 ماه</div>
+                            <div class="section-title">درمان لیشمانیوز احشایی</div>
+                            <div class="item">1️⃣ رژیم غذایی مناسب (سوءتغذیه)</div>
+                            <div class="item">2️⃣ انتقال خون (کم‌خونی شدید)</div>
+                            <div class="item">3️⃣ گلوکانتیم: 20 mg/kg IV/IM × 28 روز</div>
+                            <div class="item">4️⃣ مقاومت → آمفوتریسین B، پنتامیدین</div>
+                            <div class="success">شاخص بهبود: عدم عود تا 6 ماه + ظهور ائوزینوفیل</div>
                         </div>
 
                         <div class="section">
-                            <div class="section-title">پیشگیری</div>
-                            <div class="item">🦟 سم‌پاشی، تور</div>
-                            <div class="item">🐕 کنترل مخزن</div>
-                            <div class="item">💉 واکسیناسیون</div>
+                            <div class="section-title">پیشگیری و کنترل</div>
+                            <div class="item">🦟 کنترل ناقل: سم‌پاشی، تورهای ریز، دورکننده‌ها</div>
+                            <div class="item">🐕 کنترل مخزن: جمع‌آوری سگ‌های ولگرد</div>
+                            <div class="item">💉 واکسیناسیون: لیشمانیزاسیون (300,000 لپتومونایی)</div>
+                            <div class="item">🏠 محافظت فردی: تور پشه‌بند، پنجره‌های توری‌دار</div>
                         </div>
 
                         <div class="section">
                             <div class="section-title">مصونیت</div>
-                            <div class="success">کامل و دائمی (Cross-immunity)</div>
-                            <div class="item">Th1، IFN-γ، TNF-α</div>
+                            <div class="success">مصونیت کامل و دائمی (Cross-immunity)</div>
+                            <div class="item">• ابتلا به L. major → مصونیت علیه L. tropica</div>
+                            <div class="item">• ابتلا به L. tropica → مصونیت علیه L. major</div>
+                            <div class="item">• پاسخ ایمنی: Th1، IL-12، IFN-γ، TNF-α</div>
+                            <div class="note">درمان سریع ممکن است سلول‌های خاطره کافی ایجاد نکند</div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="info-footer">
-                <strong>🌍 اپیدمیولوژی ایران</strong>
+                <strong style="font-size: clamp(1rem, 4vw, 1.3rem);">🌍 اپیدمیولوژی لیشمانیوز در ایران</strong>
                 <div class="stats">
-                    <div class="stat-box">🥉 رتبه 3 جهانی<br>(بعد افغانستان و سوریه)</div>
-                    <div class="stat-box">📍 15 استان اندمیک<br>16 استان غیرمستقیم</div>
-                    <div class="stat-box">⚠️ 350M در معرض خطر<br>1.5M مورد جدید/سال</div>
+                    <div class="stat-box">
+                        <strong>🥉 رتبه 3 جهانی</strong><br>
+                        بعد از افغانستان و سوریه
+                    </div>
+                    <div class="stat-box">
+                        <strong>📍 31 استان</strong><br>
+                        15 استان اندمیک<br>
+                        16 استان غیرمستقیم
+                    </div>
+                    <div class="stat-box">
+                        <strong>⚠️ آمار جهانی</strong><br>
+                        350M در معرض خطر<br>
+                        1.5M مورد جدید/سال
+                    </div>
                 </div>
+                <p style="margin-top: 15px; opacity: 0.9; font-size: clamp(0.7rem, 2.5vw, 0.85rem);">
+                    📚 مرجع: جلسه چهارم انگل‌شناسی پزشکی - دکتر یقه - دانشگاه علوم پزشکی - بهمن 1402
+                </p>
             </div>
         </div>
     </div>
 
     <script>
         let scale = 1;
-        const container = document.getElementById('container');
+        const content = document.getElementById('content');
 
         function zoomIn() {
-            scale = Math.min(scale + 0.1, 2);
+            scale = Math.min(scale + 0.15, 3);
             updateZoom();
         }
 
         function zoomOut() {
-            scale = Math.max(scale - 0.1, 0.5);
+            scale = Math.max(scale - 0.15, 0.6);
             updateZoom();
         }
 
@@ -579,7 +806,13 @@
         }
 
         function updateZoom() {
-            container.style.transform = `scale(${scale})`;
+            content.style.transform = `scale(${scale})`;
+        }
+
+        function toggleBranch(header) {
+            const content = header.nextElementSibling;
+            header.classList.toggle('collapsed');
+            content.classList.toggle('collapsed');
         }
 
         // Keyboard shortcuts
@@ -598,18 +831,27 @@
             }
         });
 
-        // Mouse wheel zoom
-        container.addEventListener('wheel', (e) => {
-            if (e.ctrlKey) {
-                e.preventDefault();
-                if (e.deltaY < 0) {
-                    zoomIn();
+        // Prevent default pinch zoom on mobile
+        document.addEventListener('gesturestart', function (e) {
+            e.preventDefault();
+        });
+
+        // Double tap to zoom on mobile
+        let lastTap = 0;
+        document.addEventListener('touchend', function(e) {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            if (tapLength < 300 && tapLength > 0) {
+                if (scale === 1) {
+                    scale = 1.5;
                 } else {
-                    zoomOut();
+                    scale = 1;
                 }
+                updateZoom();
+                e.preventDefault();
             }
+            lastTap = currentTime;
         });
     </script>
 </body>
-
 </html>
